@@ -1,0 +1,23 @@
+language: php
+
+#env:
+#  global:
+#    - setup=basic
+#    - coverage=false
+#    - xdebug=false
+#    - phpstan=false
+#    - laravel=false
+
+#sudo: false
+
+#services:
+#  - memcached
+
+#before_install:
+
+#install:
+
+#script:
+
+#after_success:
+#  - if [[ $coverage = 'true' ]]; then bash <(curl -s https://codecov.io/bash); fi

@@ -1,0 +1,13 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Aziev\\": "src/Aziev/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "8"
+    },
+    "require": {
+        "graze/telnet-client": "^2.2"
+    }
+}

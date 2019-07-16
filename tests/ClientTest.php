@@ -2,41 +2,41 @@
 
 namespace Tests;
 
-use PHPUnit\Framework\TestCase;
 use Aziev\MemcachedClient\Client;
+use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
 {
-	/**
-     * The host used for testing
+    /**
+     * The host used for testing.
      *
      * @var string
      */
     protected $host = '127.0.0.1';
 
     /**
-     * Client instance
+     * Client instance.
      *
      * @var \Aziev\MemcachedClient\Client
      */
     protected $client;
 
     /**
-     * Key for test entries
+     * Key for test entries.
      *
      * @var string
      */
     protected $key;
 
     /**
-     * Value for test entries
+     * Value for test entries.
      *
      * @var string
      */
     protected $value;
 
-	/**
-     * Prepare some stuff
+    /**
+     * Prepare some stuff.
      *
      * @return void
      */
@@ -47,7 +47,7 @@ class ClientTest extends TestCase
         $this->client = new Client($this->host);
     }
 
-	/**
+    /**
      * Test the set method.
      *
      * @return void
@@ -108,7 +108,7 @@ class ClientTest extends TestCase
     }
 
     /**
-     * Cleanup after test
+     * Cleanup after test.
      *
      * @return void
      */

@@ -45,7 +45,7 @@ class Client
     private $asyncMode = false;
 
     /**
-     * Memcached server ending responses list
+     * Memcached server ending responses list.
      *
      * @var array
      */
@@ -80,6 +80,7 @@ class Client
     {
         if (!is_bool($value)) {
             $type = gettype($value);
+
             throw new \InvalidArgumentException("Expected boolean value, $type given");
         }
 
@@ -92,17 +93,19 @@ class Client
     }
 
     /**
-     * Execute the memcached command
+     * Execute the memcached command.
      *
      * @param $command
      * @param bool $forceSync
-     * @return string
+     *
      * @throws \Exception
+     *
+     * @return string
      */
     private function execute($command, $forceSync = false)
     {
         $connection = $this->getConnection();
-        $input = $command . self::LINE_ENDINGS;
+        $input = $command.self::LINE_ENDINGS;
         $output = '';
 
         fwrite($connection, $input);
@@ -115,7 +118,7 @@ class Client
             $output .= fgets($connection, 256);
 
             foreach ($this->endResponses as $item) {
-                if (preg_match('/^' . $item . '/imu', $output)) {
+                if (preg_match('/^'.$item.'/imu', $output)) {
                     break 2;
                 }
             }
@@ -125,10 +128,11 @@ class Client
     }
 
     /**
-     * Get instance of connection to Memcached server
+     * Get instance of connection to Memcached server.
+     *
+     * @throws \Exception
      *
      * @return resource
-     * @throws \Exception
      */
     private function getConnection()
     {
@@ -157,20 +161,22 @@ class Client
     }
 
     /**
-     * Set value for the specified key
+     * Set value for the specified key.
      *
      * @param $key
      * @param $value
      * @param int|string $expirationTime
-     * @return bool
+     *
      * @throws \Exception
+     *
+     * @return bool
      */
     public function set($key, $value, $expirationTime = 3600)
     {
         $valueLength = strlen($value);
         $result = $this->execute(
-            self::COMMAND_SET . " $key 0 $expirationTime $valueLength" . self::LINE_ENDINGS
-            . $value
+            self::COMMAND_SET." $key 0 $expirationTime $valueLength".self::LINE_ENDINGS
+            .$value
         );
 
         if (!$this->isResponseStatus($result, self::RESPONSE_STORED)) {
@@ -181,15 +187,17 @@ class Client
     }
 
     /**
-     * Get value by the key
+     * Get value by the key.
      *
      * @param $key
-     * @return string
+     *
      * @throws \Exception
+     *
+     * @return string
      */
     public function get($key)
     {
-        $result = $this->execute(self::COMMAND_GET . " $key", true);
+        $result = $this->execute(self::COMMAND_GET." $key", true);
 
         if (!$this->isResponseStatus($result, self::RESPONSE_VALUE)) {
             throw new \Exception("Error when trying to get value for the key: $key");
@@ -203,15 +211,17 @@ class Client
     }
 
     /**
-     * Delete value by the key
+     * Delete value by the key.
      *
      * @param $key
-     * @return bool
+     *
      * @throws \Exception
+     *
+     * @return bool
      */
     public function delete($key)
     {
-        $result = $this->execute(self::COMMAND_DELETE . " $key");
+        $result = $this->execute(self::COMMAND_DELETE." $key");
 
         if ($this->isResponseStatus($result, self::RESPONSE_NOT_FOUND)) {
             throw new \Exception("No value found with key: $key");

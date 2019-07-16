@@ -10,8 +10,8 @@ language: php
 
 #sudo: false
 
-#services:
-#  - memcached
+services:
+  - memcached
 
 before_install:
   - composer self-update

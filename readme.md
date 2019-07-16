@@ -1,6 +1,7 @@
 # Memcached Client
 
 [![Build Status](https://travis-ci.org/aziev/php-memcached-client.svg?branch=master)](https://travis-ci.org/aziev/php-memcached-client)
+[![StyleCI](https://github.styleci.io/repos/197148649/shield?branch=master)](https://github.styleci.io/repos/197148649)
 
 The PHP client for Memcached.
 

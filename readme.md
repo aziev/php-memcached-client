@@ -1,5 +1,7 @@
 # Memcached Client
 
+[![Build Status](https://travis-ci.org/aziev/php-memcached-client.svg?branch=master)](https://travis-ci.org/aziev/php-memcached-client)
+
 The PHP client for Memcached.
 
 ## Usage

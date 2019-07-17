@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aziev\MemcachedClient;
+
+use Aziev\MemcachedClient\Exceptions\NoValueFoundForTheKeyException;
 
 class Client
 {
@@ -62,7 +66,7 @@ class Client
         self::RESPONSE_VERSION,
     ];
 
-    public function __construct($host = 'localhost', $port = '11211', $timeout = 30)
+    public function __construct(string $host = 'localhost', int $port = 11211, int $timeout = 30)
     {
         $this->host = $host;
         $this->port = $port;
@@ -76,18 +80,22 @@ class Client
         }
     }
 
-    public function async($value = true)
+    /**
+     * Switch async mode
+     *
+     * @param bool $value
+     */
+    public function async(bool $value = true): void
     {
-        if (!is_bool($value)) {
-            $type = gettype($value);
-
-            throw new \InvalidArgumentException("Expected boolean value, $type given");
-        }
-
         $this->asyncMode = $value;
     }
 
-    public function isAsync()
+    /**
+     * Check if async mode is switched on
+     *
+     * @return bool
+     */
+    public function isAsync(): bool
     {
         return $this->asyncMode;
     }
@@ -95,17 +103,17 @@ class Client
     /**
      * Execute the memcached command.
      *
-     * @param $command
+     * @param string $command
      * @param bool $forceSync
      *
      * @throws \Exception
      *
      * @return string
      */
-    private function execute($command, $forceSync = false)
+    private function execute(string $command, bool $forceSync = false): string
     {
         $connection = $this->getConnection();
-        $input = $command.self::LINE_ENDINGS;
+        $input = $command . self::LINE_ENDINGS;
         $output = '';
 
         fwrite($connection, $input);
@@ -118,7 +126,7 @@ class Client
             $output .= fgets($connection, 256);
 
             foreach ($this->endResponses as $item) {
-                if (preg_match('/^'.$item.'/imu', $output)) {
+                if (preg_match('/^' . $item . '/imu', $output)) {
                     break 2;
                 }
             }
@@ -155,7 +163,14 @@ class Client
         return $connection;
     }
 
-    private function isResponseStatus($response, $status)
+    /**
+     * Check if Memcached response status matches passed parameter
+     *
+     * @param string $response
+     * @param string $status
+     * @return bool
+     */
+    private function isResponseStatus(string $response, string $status): bool
     {
         return $status === substr($response, 0, strlen($status));
     }
@@ -163,24 +178,24 @@ class Client
     /**
      * Set value for the specified key.
      *
-     * @param $key
+     * @param string $key
      * @param $value
-     * @param int|string $expirationTime
+     * @param int $expirationTime
      *
      * @throws \Exception
      *
      * @return bool
      */
-    public function set($key, $value, $expirationTime = 3600)
+    public function set(string $key, $value, int $expirationTime = 3600): bool
     {
         $valueLength = strlen($value);
         $result = $this->execute(
-            self::COMMAND_SET." $key 0 $expirationTime $valueLength".self::LINE_ENDINGS
-            .$value
+            self::COMMAND_SET . " {$key} 0 {$expirationTime} {$valueLength}" . self::LINE_ENDINGS
+            . $value
         );
 
         if (!$this->isResponseStatus($result, self::RESPONSE_STORED)) {
-            throw new \Exception("Error when trying to set value: $value for the key: $key");
+            throw new \Exception("Error when trying to set value: {$value} for the key: {$key}");
         }
 
         return true;
@@ -189,22 +204,22 @@ class Client
     /**
      * Get value by the key.
      *
-     * @param $key
+     * @param string $key
      *
      * @throws \Exception
      *
      * @return string
      */
-    public function get($key)
+    public function get(string $key)
     {
-        $result = $this->execute(self::COMMAND_GET." $key", true);
+        $result = $this->execute(self::COMMAND_GET . " {$key}", true);
 
         if (!$this->isResponseStatus($result, self::RESPONSE_VALUE)) {
-            throw new \Exception("Error when trying to get value for the key: $key");
+            throw new \Exception("Error when trying to get value for the key: {$key}");
         }
 
         if ($this->isResponseStatus($result, self::RESPONSE_END)) {
-            throw new \Exception("No value found for the key: $key");
+            throw new \Exception("No value found for the key: {$key}");
         }
 
         return explode(self::LINE_ENDINGS, $result)[1];
@@ -213,22 +228,43 @@ class Client
     /**
      * Delete value by the key.
      *
-     * @param $key
+     * @param string $key
+     *
+     * @throws NoValueFoundForTheKeyException
+     * @throws \Exception
+     *
+     * @return bool
+     */
+    public function delete(string $key): bool
+    {
+        $result = $this->execute(self::COMMAND_DELETE . " {$key}");
+
+        if ($this->isResponseStatus($result, self::RESPONSE_NOT_FOUND)) {
+            throw new NoValueFoundForTheKeyException("No value found with key: {$key}");
+        }
+
+        if (!$this->isResponseStatus($result, self::RESPONSE_DELETED)) {
+            throw new \Exception("Error when trying to delete value for the key: {$key}");
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete value by the key if it exists.
+     *
+     * @param string $key
      *
      * @throws \Exception
      *
      * @return bool
      */
-    public function delete($key)
+    public function deleteIfExists(string $key): bool
     {
-        $result = $this->execute(self::COMMAND_DELETE." $key");
-
-        if ($this->isResponseStatus($result, self::RESPONSE_NOT_FOUND)) {
-            throw new \Exception("No value found with key: $key");
-        }
-
-        if (!$this->isResponseStatus($result, self::RESPONSE_DELETED)) {
-            throw new \Exception("Error when trying to delete value for the key: $key");
+        try {
+            $this->delete($key);
+        } catch (NoValueFoundForTheKeyException $e) {
+            return true;
         }
 
         return true;

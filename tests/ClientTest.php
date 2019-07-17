@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Aziev\MemcachedClient\Client;
+use Aziev\MemcachedClient\Exceptions\NoValueFoundForTheKeyException;
 use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
@@ -42,7 +43,7 @@ class ClientTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->key = md5(microtime(true));
+        $this->key = md5((string)microtime(true));
         $this->value = sha1($this->key);
         $this->client = new Client($this->host);
     }
@@ -50,9 +51,11 @@ class ClientTest extends TestCase
     /**
      * Test the set method.
      *
+     * @throws \Exception
+     *
      * @return void
      */
-    public function testSet()
+    public function testSet(): void
     {
         $this->assertTrue($this->client->set($this->key, $this->value));
     }
@@ -60,9 +63,11 @@ class ClientTest extends TestCase
     /**
      * Test the get method.
      *
+     * @throws \Exception
+     *
      * @return void
      */
-    public function testGet()
+    public function testGet(): void
     {
         // Test for existing key
         $this->client->set($this->key, $this->value);
@@ -79,9 +84,12 @@ class ClientTest extends TestCase
     /**
      * Test the delete method.
      *
+     * @throws NoValueFoundForTheKeyException
+     * @throws \Exception
+     *
      * @return void
      */
-    public function testDelete()
+    public function testDelete(): void
     {
         $this->client->set($this->key, $this->value);
 
@@ -93,31 +101,32 @@ class ClientTest extends TestCase
         $this->client->delete($this->key);
         $this->expectException(\Exception::class);
         $this->client->get($this->key);
+
+        $this->expectException(NoValueFoundForTheKeyException::class);
+        $this->client->delete(md5($this->key));
     }
 
-    public function testAsync()
+    /**
+     * Test the async method
+     */
+    public function testAsync(): void
     {
         $this->client->async();
         $this->assertTrue($this->client->isAsync());
 
         $this->client->async(false);
         $this->assertFalse($this->client->isAsync());
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->client->async('not boolean');
     }
 
     /**
      * Cleanup after test.
      *
+     * @throws \Exception
+     *
      * @return void
      */
     protected function tearDown(): void
     {
-        try {
-            $this->client->delete($this->key);
-        } catch (\Exception $e) {
-            //
-        }
+        $this->client->deleteIfExists($this->key);
     }
 }

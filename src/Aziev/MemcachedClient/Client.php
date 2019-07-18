@@ -39,6 +39,8 @@ class Client
 
     const COMMAND_DELETE = 'delete';
 
+    const STATUS_COMMAND_EXECUTED = 'COMMAND_EXECUTED';
+
     private $host;
 
     private $port;
@@ -120,7 +122,7 @@ class Client
         fwrite($connection, $input);
 
         if ($this->asyncMode && !$forceSync) {
-            return 'QUEUED';
+            return self::STATUS_COMMAND_EXECUTED;
         }
 
         while (!feof($connection)) {

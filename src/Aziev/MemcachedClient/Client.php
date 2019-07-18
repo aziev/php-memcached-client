@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aziev\MemcachedClient;
 
 use Aziev\MemcachedClient\Exceptions\NoValueFoundForTheKeyException;
+use Exception;
 
 class Client
 {
@@ -106,7 +107,7 @@ class Client
      * @param string $command
      * @param bool $forceSync
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return string
      */
@@ -138,7 +139,7 @@ class Client
     /**
      * Get instance of connection to Memcached server.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return resource
      */
@@ -151,7 +152,7 @@ class Client
         $connection = fsockopen($this->host, $this->port, $errorNumber, $errorString, $this->timeout);
 
         if (!$connection) {
-            throw new \Exception(sprintf(
+            throw new Exception(sprintf(
                 'Error "%s: %s" while connecting to Memcached on host: %s:%s',
                 $errorNumber,
                 $errorString,
@@ -168,6 +169,7 @@ class Client
      *
      * @param string $response
      * @param string $status
+     *
      * @return bool
      */
     private function isResponseStatus(string $response, string $status): bool
@@ -179,14 +181,14 @@ class Client
      * Set value for the specified key.
      *
      * @param string $key
-     * @param $value
+     * @param string $value
      * @param int $expirationTime
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return bool
      */
-    public function set(string $key, $value, int $expirationTime = 3600): bool
+    public function set(string $key, string $value, int $expirationTime = 3600): bool
     {
         $valueLength = strlen($value);
         $result = $this->execute(
@@ -195,7 +197,7 @@ class Client
         );
 
         if (!$this->isResponseStatus($result, self::RESPONSE_STORED)) {
-            throw new \Exception("Error when trying to set value: {$value} for the key: {$key}");
+            throw new Exception("Error when trying to set value: {$value} for the key: {$key}");
         }
 
         return true;
@@ -206,20 +208,20 @@ class Client
      *
      * @param string $key
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return string
      */
-    public function get(string $key)
+    public function get(string $key): string
     {
         $result = $this->execute(self::COMMAND_GET . " {$key}", true);
 
         if (!$this->isResponseStatus($result, self::RESPONSE_VALUE)) {
-            throw new \Exception("Error when trying to get value for the key: {$key}");
+            throw new Exception("Error when trying to get value for the key: {$key}");
         }
 
         if ($this->isResponseStatus($result, self::RESPONSE_END)) {
-            throw new \Exception("No value found for the key: {$key}");
+            throw new Exception("No value found for the key: {$key}");
         }
 
         return explode(self::LINE_ENDINGS, $result)[1];
@@ -231,7 +233,7 @@ class Client
      * @param string $key
      *
      * @throws NoValueFoundForTheKeyException
-     * @throws \Exception
+     * @throws Exception
      *
      * @return bool
      */
@@ -244,7 +246,7 @@ class Client
         }
 
         if (!$this->isResponseStatus($result, self::RESPONSE_DELETED)) {
-            throw new \Exception("Error when trying to delete value for the key: {$key}");
+            throw new Exception("Error when trying to delete value for the key: {$key}");
         }
 
         return true;
@@ -255,7 +257,7 @@ class Client
      *
      * @param string $key
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return bool
      */

@@ -4,6 +4,7 @@ namespace Tests;
 
 use Aziev\MemcachedClient\Client;
 use Aziev\MemcachedClient\Exceptions\NoValueFoundForTheKeyException;
+use Exception;
 use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
@@ -51,7 +52,7 @@ class ClientTest extends TestCase
     /**
      * Test the set method.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -63,7 +64,7 @@ class ClientTest extends TestCase
     /**
      * Test the get method.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -77,7 +78,7 @@ class ClientTest extends TestCase
         );
 
         // Test for not existing key
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->client->get(md5($this->key));
     }
 
@@ -85,7 +86,7 @@ class ClientTest extends TestCase
      * Test the delete method.
      *
      * @throws NoValueFoundForTheKeyException
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -99,7 +100,7 @@ class ClientTest extends TestCase
         );
 
         $this->client->delete($this->key);
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->client->get($this->key);
 
         $this->expectException(NoValueFoundForTheKeyException::class);
@@ -121,7 +122,7 @@ class ClientTest extends TestCase
     /**
      * Cleanup after test.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */

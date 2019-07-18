@@ -17,7 +17,7 @@ $client->get('foo'); // bar
 $client->delete('foo');
 ```
 
-By default the client work in synchronous mode. But you can let the client work in asynchronous mode:
+By default the client works in synchronous mode but you can let it work asynchronously:
 
 ```php
 <?php
